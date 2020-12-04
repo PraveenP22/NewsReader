@@ -37,27 +37,23 @@ public class RetrofitClient {
     private Api myApi;
 
     private RetrofitClient() {
-        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+//        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+//        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+//
+//
+//        int cacheSize = 10 * 1024 * 1024; // 10 MB
+//        Cache cache = new Cache(context.getCacheDir(), cacheSize);
+//
+//        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+//                // .addInterceptor(provideHttpLoggingInterceptor()) // For HTTP request & Response data logging
+//                .addInterceptor(offlineInterceptor)
+//                .addNetworkInterceptor(onlineInterceptor)
+//                .cache(cache)
+//                .build();
 
-
-        int cacheSize = 10 * 1024 * 1024; // 10 MB
-        Cache cache = new Cache(context.getCacheDir(), cacheSize);
-
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                // .addInterceptor(provideHttpLoggingInterceptor()) // For HTTP request & Response data logging
-                .addInterceptor(offlineInterceptor)
-                .addNetworkInterceptor(onlineInterceptor)
-                .cache(cache)
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(Api.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create(new Gson()))
-                .client(okHttpClient)
-                .baseUrl(BASE_URL)
-                .build();
-
         myApi = retrofit.create(Api.class);
     }
 
@@ -77,39 +73,39 @@ public class RetrofitClient {
 
 
 
-    private static Interceptor onlineInterceptor = new Interceptor() {
-        @Override
-        public okhttp3.Response intercept(Chain chain) throws IOException {
-            okhttp3.Response response = chain.proceed(chain.request());
-            int maxAge = 60; // read from cache for 60 seconds even if there is internet connection
-            return response.newBuilder()
-                    .header("Cache-Control", String.format("max-age=%d", 50000))
-                    .removeHeader("Pragma")
-                    .build();
-        }
-    };
-
-
-    private static Interceptor offlineInterceptor= new Interceptor() {
-        @Override
-        public okhttp3.Response intercept(Chain chain) throws IOException {
-            Request request = chain.request();
-            if (!!isNetworkAvailable()) {
-                int maxStale = 60 * 60 * 24 * 30; // Offline cache available for 30 days
-                request = request.newBuilder()
-                        .header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale)
-                        .removeHeader("Pragma")
-                        .build();
-            }
-            return chain.proceed(request);
-        }
-    };
-
-    private static boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService( CONNECTIVITY_SERVICE );
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
+//    private static Interceptor onlineInterceptor = new Interceptor() {
+//        @Override
+//        public okhttp3.Response intercept(Chain chain) throws IOException {
+//            okhttp3.Response response = chain.proceed(chain.request());
+//            int maxAge = 60; // read from cache for 60 seconds even if there is internet connection
+//            return response.newBuilder()
+//                    .header("Cache-Control", String.format("max-age=%d", 50000))
+//                    .removeHeader("Pragma")
+//                    .build();
+//        }
+//    };
+//
+//
+//    private static Interceptor offlineInterceptor= new Interceptor() {
+//        @Override
+//        public okhttp3.Response intercept(Chain chain) throws IOException {
+//            Request request = chain.request();
+//            if (!!isNetworkAvailable()) {
+//                int maxStale = 60 * 60 * 24 * 30; // Offline cache available for 30 days
+//                request = request.newBuilder()
+//                        .header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale)
+//                        .removeHeader("Pragma")
+//                        .build();
+//            }
+//            return chain.proceed(request);
+//        }
+//    };
+//
+//    private static boolean isNetworkAvailable() {
+//        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService( CONNECTIVITY_SERVICE );
+//        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+//        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+//    }
 
 
 }
